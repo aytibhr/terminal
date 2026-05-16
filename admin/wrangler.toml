@@ -1,9 +1,0 @@
-# Terminal 8 Admin - Cloudflare Pages Configuration
-name = "terminal8-admin"
-compatibility_date = "2024-04-03"
-compatibility_flags = ["nodejs_compat"]
-
-[build]
-command = "pnpm run build"
-path = ".next"
-root_dir = "admin"
