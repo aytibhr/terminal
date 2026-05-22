@@ -235,6 +235,7 @@ function Header() {
               { href: '/memberships', label: 'Memberships', highlight: true },
               { href: '/addons', label: 'Addons' },
               { href: '/leaderboard', label: 'Leaderboard' },
+              { href: '/gamers', label: 'Gamers' },
             ].map(item => {
               const isActive = pathname === item.href;
               return (
@@ -244,10 +245,27 @@ function Header() {
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all duration-200 border ${
                     isActive
                       ? item.highlight
-                        ? 'text-[#ffea00] bg-[#ffea00]/15 border-[#ffea00]/40 shadow-[0_0_15px_rgba(255,234,0,0.2)] font-bold'
-                        : 'text-[#00f3ff] bg-[#00f3ff]/15 border-[#00f3ff]/40 shadow-[0_0_15px_rgba(0,243,255,0.2)] font-bold'
                       : 'border-transparent text-gray-400 hover:text-white hover:bg-white/5'
                   }`}
+                  style={
+                    isActive
+                      ? item.highlight
+                        ? {
+                            color: '#ffea00',
+                            backgroundColor: 'rgba(255, 234, 0, 0.15)',
+                            borderColor: 'rgba(255, 234, 0, 0.4)',
+                            boxShadow: '0 0 15px rgba(255, 234, 0, 0.2)',
+                            fontWeight: 'bold',
+                          }
+                        : {
+                            color: '#00f3ff',
+                            backgroundColor: 'rgba(0, 243, 255, 0.15)',
+                            borderColor: 'rgba(0, 243, 255, 0.4)',
+                            boxShadow: '0 0 15px rgba(0, 243, 255, 0.2)',
+                            fontWeight: 'bold',
+                          }
+                      : {}
+                  }
                 >
                   {item.label}
                 </Link>
@@ -256,6 +274,43 @@ function Header() {
           </nav>
         </div>
         <div className="flex items-center space-x-1 md:space-x-2">
+          {/* Mobile hamburger navigation */}
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger className="p-2 rounded-full hover:bg-white/10 transition-colors text-gray-400 hover:text-[#00f3ff] focus:outline-none flex items-center justify-center">
+                <Menu className="w-5 h-5" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-[#0a0a1a] border border-gray-800 text-gray-200 shadow-[0_4px_20px_rgba(0,0,0,0.5)]">
+                <div className="px-3 py-1.5 border-b border-gray-800">
+                  <p className="text-[9px] text-[#00f3ff] font-pixel tracking-wider">NAVIGATE</p>
+                </div>
+                {[
+                  { href: '/dashboard', label: 'Dashboard' },
+                  { href: '/stations', label: 'Stations' },
+                  { href: '/reports', label: 'Reports' },
+                  { href: '/memberships', label: 'Memberships' },
+                  { href: '/addons', label: 'Addons' },
+                  { href: '/leaderboard', label: 'Leaderboard' },
+                  { href: '/gamers', label: 'Gamers' },
+                ].map(item => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <DropdownMenuItem key={item.href} asChild className="cursor-pointer hover:bg-[#0f1026] focus:bg-[#0f1026]">
+                      <Link 
+                        href={item.href} 
+                        className={`flex w-full py-1 text-xs font-mono transition-colors duration-150 ${
+                          isActive ? 'text-[#00f3ff] font-bold' : 'text-gray-300 hover:text-white'
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           <NotificationBell />
           <Suspense fallback={<div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-gray-800 animate-pulse" />}>
             <UserMenu />
