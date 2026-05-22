@@ -41,6 +41,7 @@ export const sessions = pgTable('sessions', {
   startTime: timestamp('start_time').notNull().defaultNow(),
   endTime: timestamp('end_time'),
   durationMinutes: integer('duration_minutes').notNull().default(0),
+  setupMinutes: integer('setup_minutes').notNull().default(0),
   totalPrice: integer('total_price').notNull().default(0),
   status: varchar('status', { length: 20 }).notNull().default('Active'),
   userPhone: varchar('user_phone', { length: 20 }),

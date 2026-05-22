@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { SuccessModal } from '@/components/ui/success-modal';
 import { WA_TEMPLATES } from '@/lib/utils/whatsapp';
-import { Monitor, Zap, CheckCircle2, Settings2, Plus, Clock, IndianRupee, Users, User, Coins, AlertTriangle, X, CupSoda, Trash2 } from 'lucide-react';
+import { Monitor, Zap, CheckCircle2, Settings2, Plus, Clock, IndianRupee, Users, User, Coins, AlertTriangle, X, CupSoda, Trash2, Eye } from 'lucide-react';
 import { allotSession, checkoutSession, add15Mins } from '../walk-in/actions';
 import { getSessionAddons, addAddonToSession, removeAddonFromSession } from '../addons/actions';
 import { useNotifications } from '@/lib/hooks/useNotifications';
 import { Modal } from '@/components/ui/modal';
+import { TransactionDetailsModal } from '@/components/ui/transaction-details-modal';
 
 /* ─── confirm modal ─── */
 function ConfirmModal({ open, onClose, onConfirm, title, message, confirmLabel = 'CONFIRM', confirmColor = '#ff00ea' }: any) {
@@ -81,6 +82,15 @@ export function DashboardClient({ stations, members, plans, recentTxns, todaysRe
 
   // +15 confirm modal
   const [extend15Modal, setExtend15Modal] = useState<{ open: boolean; station: any }>({ open: false, station: null });
+
+  // Transaction details modal state
+  const [selectedTxnId, setSelectedTxnId] = useState<number | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  const handleViewDetails = (id: number) => {
+    setSelectedTxnId(id);
+    setIsDetailsOpen(true);
+  };
 
   // Timer
   useEffect(() => {
@@ -417,9 +427,18 @@ export function DashboardClient({ stations, members, plans, recentTxns, todaysRe
                   </p>
                 )}
               </div>
-              <div className="text-right">
-                {t.amountCash > 0 && <p className="text-[#00ff55] font-mono text-sm font-bold">+₹{t.amountCash}</p>}
-                {t.amountCreditsUsed > 0 && <p className="text-[#ffea00] font-mono text-xs">-{t.amountCreditsUsed} coins</p>}
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  {t.amountCash > 0 && <p className="text-[#00ff55] font-mono text-sm font-bold">+₹{t.amountCash}</p>}
+                  {t.amountCreditsUsed > 0 && <p className="text-[#ffea00] font-mono text-xs">-{t.amountCreditsUsed} coins</p>}
+                </div>
+                <button 
+                  onClick={() => handleViewDetails(t.id)}
+                  className="p-1.5 rounded bg-[#ff00ea]/10 hover:bg-[#ff00ea]/30 text-[#ff00ea] transition-all hover:scale-110 border border-[#ff00ea]/20 flex items-center justify-center"
+                  title="View Details"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
               </div>
             </div>
           ))}
@@ -686,6 +705,11 @@ export function DashboardClient({ stations, members, plans, recentTxns, todaysRe
           </Button>
         </div>
       </Modal>
+      <TransactionDetailsModal 
+        open={isDetailsOpen} 
+        onClose={() => setIsDetailsOpen(false)} 
+        txnId={selectedTxnId} 
+      />
     </main>
   );
 }

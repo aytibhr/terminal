@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@/lib/db/drizzle';
-import { stations, sessions, transactions, userMemberships } from '@/lib/db/schema';
+import { stations, sessions, transactions, userMemberships, sessionAddons, addons } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import { revalidatePath } from 'next/cache';
 
@@ -16,6 +16,7 @@ export async function allotSession(data: { stationId: number; durationMinutes: n
     startTime: new Date(),
     endTime: new Date(Date.now() + (data.durationMinutes + data.setupMinutes) * 60000),
     durationMinutes: data.durationMinutes, // actual played time stored in db
+    setupMinutes: data.setupMinutes,
     totalPrice,
     status: 'Active',
     userPhone: data.userPhone,
@@ -65,4 +66,44 @@ export async function add15Mins(stationId: number, sessionId: number) {
     durationMinutes: session.durationMinutes + 15,
   }).where(eq(sessions.id, sessionId));
   revalidatePath('/dashboard');
+}
+
+export async function getTransactionDetails(transactionId: number) {
+  const [txn] = await db.select().from(transactions).where(eq(transactions.id, transactionId));
+  if (!txn) throw new Error('Transaction not found');
+
+  let sessionObj = null;
+  let stationObj = null;
+  let addonsList: any[] = [];
+  
+  if (txn.sessionId) {
+    const [sess] = await db.select().from(sessions).where(eq(sessions.id, txn.sessionId));
+    if (sess) {
+      sessionObj = sess;
+      const [st] = await db.select().from(stations).where(eq(stations.id, sess.stationId));
+      if (st) {
+        stationObj = st;
+      }
+      
+      // Fetch session addons
+      addonsList = await db
+        .select({
+          id: sessionAddons.id,
+          addonId: sessionAddons.addonId,
+          name: addons.name,
+          quantity: sessionAddons.quantity,
+          priceAtPurchase: sessionAddons.priceAtPurchase,
+        })
+        .from(sessionAddons)
+        .leftJoin(addons, eq(sessionAddons.addonId, addons.id))
+        .where(eq(sessionAddons.sessionId, sess.id));
+    }
+  }
+
+  return {
+    transaction: txn,
+    session: sessionObj,
+    station: stationObj,
+    addons: addonsList
+  };
 }

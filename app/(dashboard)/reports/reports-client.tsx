@@ -3,11 +3,12 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Search, IndianRupee, Gamepad2, ChevronLeft, ChevronRight, Clock, Crown } from 'lucide-react';
+import { Search, IndianRupee, Gamepad2, ChevronLeft, ChevronRight, Clock, Crown, Eye } from 'lucide-react';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell
 } from 'recharts';
+import { TransactionDetailsModal } from '@/components/ui/transaction-details-modal';
 
 /* ─── Custom Date Picker ─── */
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -108,6 +109,13 @@ const formatPeriod = (start: string | Date | null | undefined, end: string | Dat
 
 export function ReportsClient({ transactions }: { transactions: any[] }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTxnId, setSelectedTxnId] = useState<number | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  const handleViewDetails = (id: number) => {
+    setSelectedTxnId(id);
+    setIsDetailsOpen(true);
+  };
 
   const now = new Date();
   const defaultStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
@@ -249,8 +257,8 @@ export function ReportsClient({ transactions }: { transactions: any[] }) {
           <table className="w-full text-left font-mono text-sm">
             <thead className="bg-[#0f1026] text-gray-500 text-xs">
               <tr>
-                {['TXN ID','DATE & TIME','USER DETAILS','TYPE','PLAYED TIME','SESSION PERIOD','CASH (₹)','T8 COINS'].map(h => (
-                  <th key={h} className="p-4 border-b border-gray-800">{h}</th>
+                {['TXN ID','DATE & TIME','USER DETAILS','TYPE','PLAYED TIME','SESSION PERIOD','CASH (₹)','T8 COINS','VIEW'].map(h => (
+                  <th key={h} className={`p-4 border-b border-gray-800 ${h === 'VIEW' ? 'text-center' : ''}`}>{h}</th>
                 ))}
               </tr>
             </thead>
@@ -284,14 +292,28 @@ export function ReportsClient({ transactions }: { transactions: any[] }) {
                   <td className="p-4 text-gray-400 text-xs">{formatPeriod(txn.sessionStartTime, txn.sessionEndTime)}</td>
                   <td className="p-4 text-[#00ff55] font-bold">{txn.amountCash > 0 ? `+${txn.amountCash}` : '-'}</td>
                   <td className="p-4 text-[#ffea00] font-bold">{txn.amountCreditsUsed > 0 ? `-${txn.amountCreditsUsed}` : '-'}</td>
+                  <td className="p-4 text-center">
+                    <button 
+                      onClick={() => handleViewDetails(txn.id)}
+                      className="p-1 rounded bg-[#ff00ea]/10 hover:bg-[#ff00ea]/30 text-[#ff00ea] transition-all hover:scale-110 border border-[#ff00ea]/20 flex items-center justify-center mx-auto"
+                      title="View Details"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
                 </tr>
               )) : (
-                <tr><td colSpan={8} className="p-8 text-center text-gray-600">No transactions found.</td></tr>
+                <tr><td colSpan={9} className="p-8 text-center text-gray-600">No transactions found.</td></tr>
               )}
             </tbody>
           </table>
         </div>
       </div>
+      <TransactionDetailsModal 
+        open={isDetailsOpen} 
+        onClose={() => setIsDetailsOpen(false)} 
+        txnId={selectedTxnId} 
+      />
     </main>
   );
 }
