@@ -130,7 +130,8 @@ export function DashboardClient({ stations, members, plans, recentTxns, todaysRe
     memberSearch && (m.phone.includes(memberSearch) || m.name.toLowerCase().includes(memberSearch.toLowerCase()))
   );
 
-  const estimatedCoins = Math.ceil(allotTime / 15);
+  const stationCoinsPerHour = allotModal.station?.coinsPerHour ?? 4;
+  const estimatedCoins = Math.ceil((allotTime / 60) * stationCoinsPerHour);
   const coinShortfall = selectedMember && estimatedCoins > selectedMember.coinsBalance;
 
   // Addon loading helper
@@ -231,7 +232,8 @@ export function DashboardClient({ stations, members, plans, recentTxns, todaysRe
     if (!checkoutModal.station?.session) return;
     const s = checkoutModal.station.session;
     const isMember = s.totalPrice === 0;
-    const finalCoins = isMember ? Math.ceil(s.durationMinutes / 15) : 0;
+    const stationCoinsPerHour = checkoutModal.station?.coinsPerHour ?? 4;
+    const finalCoins = isMember ? Math.ceil((s.durationMinutes / 60) * stationCoinsPerHour) : 0;
     // Use the operator's custom overridden cash amount
     const finalCash = customAmountCash;
 
@@ -575,7 +577,9 @@ export function DashboardClient({ stations, members, plans, recentTxns, todaysRe
                 <p className="text-[#ff00ea] text-xs mb-1">FINAL BILL</p>
                 {checkoutModal.station.session.totalPrice === 0 ? (
                   <div className="space-y-2">
-                    <p className="text-xl font-pixel text-[#ffea00]">{Math.ceil(checkoutModal.station.session.durationMinutes / 15)} COINS</p>
+                    <p className="text-xl font-pixel text-[#ffea00]">
+                      {Math.ceil((checkoutModal.station.session.durationMinutes / 60) * (checkoutModal.station.coinsPerHour ?? 4))} COINS
+                    </p>
                     <div className="mt-2 border-t border-gray-800 pt-2">
                       <label className="block text-gray-400 text-[10px] mb-1 font-mono">ADDONS CASH BILL</label>
                       <div className="relative flex items-center">

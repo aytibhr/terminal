@@ -30,15 +30,16 @@ export function StationsClient({ initialStations }: { initialStations: any[] }) 
   const [formName, setFormName] = useState('');
   const [formType, setFormType] = useState('PS5');
   const [formRate, setFormRate] = useState(150);
+  const [formCoins, setFormCoins] = useState(4);
 
   const handleAdd = async () => {
-    await createStation({ name: formName || 'New Station', type: formType, ratePerHour: formRate });
-    setAddModal(false); setFormName(''); setFormRate(150);
+    await createStation({ name: formName || 'New Station', type: formType, ratePerHour: formRate, coinsPerHour: formCoins });
+    setAddModal(false); setFormName(''); setFormRate(150); setFormCoins(4);
     addNotification({ type: 'success', title: 'Station Added', message: `${formName} is now live.` });
   };
 
   const handleEdit = async () => {
-    await updateStation(editModal.station.id, { name: formName, type: formType, ratePerHour: formRate });
+    await updateStation(editModal.station.id, { name: formName, type: formType, ratePerHour: formRate, coinsPerHour: formCoins });
     setEditModal({ open: false, station: null });
     addNotification({ type: 'info', title: 'Station Updated', message: `Changes saved.` });
   };
@@ -61,7 +62,7 @@ export function StationsClient({ initialStations }: { initialStations: any[] }) 
           <h1 className="text-3xl font-orbitron font-bold text-white tracking-wider">STATIONS</h1>
           <p className="text-gray-400 mt-2 font-mono text-sm">Manage gaming stations, pricing, and maintenance.</p>
         </div>
-        <Button onClick={() => { setFormName(''); setFormRate(150); setFormType('PS5'); setAddModal(true); }}
+        <Button onClick={() => { setFormName(''); setFormRate(150); setFormCoins(4); setFormType('PS5'); setAddModal(true); }}
           className="bg-[#00f3ff] hover:bg-transparent border-2 border-[#00f3ff] text-black hover:text-[#00f3ff] transition-all rounded-none font-pixel text-xs px-4 py-6">
           <Plus className="mr-2 h-4 w-4" /> ADD STATION
         </Button>
@@ -75,7 +76,7 @@ export function StationsClient({ initialStations }: { initialStations: any[] }) 
                 <Monitor className={`h-6 w-6 mr-3 ${station.status === 'Active' ? 'text-[#00ff55]' : station.status === 'Occupied' ? 'text-[#00f3ff]' : 'text-gray-500'}`} />
                 <div>
                   <h3 className="font-orbitron text-base font-bold text-white">{station.name}</h3>
-                  <p className="text-gray-500 font-mono text-xs">{station.type} · ₹{station.ratePerHour}/hr</p>
+                  <p className="text-gray-500 font-mono text-xs">{station.type} · ₹{station.ratePerHour}/hr · <span className="text-[#ffea00] font-bold">{station.coinsPerHour || 4} coins/hr</span></p>
                 </div>
               </div>
               <span className={`text-xs px-2 py-0.5 rounded font-mono uppercase font-bold ${station.status === 'Active' ? 'text-[#00ff55] bg-[#00ff55]/20' : station.status === 'Occupied' ? 'text-[#00f3ff] bg-[#00f3ff]/20' : 'text-gray-400 bg-gray-800'}`}>
@@ -84,7 +85,7 @@ export function StationsClient({ initialStations }: { initialStations: any[] }) 
             </div>
             <div className="flex gap-2 mt-auto pt-4">
               <Button variant="outline" size="sm" className="flex-1 border-gray-700 text-gray-300 hover:text-[#ffea00] hover:border-[#ffea00] font-mono text-xs"
-                onClick={() => { setFormName(station.name); setFormType(station.type); setFormRate(station.ratePerHour); setEditModal({ open: true, station }); }}>
+                onClick={() => { setFormName(station.name); setFormType(station.type); setFormRate(station.ratePerHour); setFormCoins(station.coinsPerHour || 4); setEditModal({ open: true, station }); }}>
                 <Edit className="h-3 w-3 mr-1" /> Edit
               </Button>
               <Button variant="outline" size="sm" className={`flex-1 border-gray-700 font-mono text-xs ${station.status === 'Maintenance' ? 'text-[#00ff55] hover:border-[#00ff55]' : 'text-gray-400'}`}
@@ -105,7 +106,10 @@ export function StationsClient({ initialStations }: { initialStations: any[] }) 
         <div className="space-y-4 font-mono">
           <div><label className="block text-[#00f3ff] text-xs mb-1">NAME</label><Input value={formName} onChange={e => setFormName(e.target.value)} className="bg-[#0f1026] border-gray-700 text-white" placeholder="e.g. PS5 Station 4" /></div>
           <div><label className="block text-[#00f3ff] text-xs mb-1">TYPE</label><Input value={formType} onChange={e => setFormType(e.target.value)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
-          <div><label className="block text-[#00f3ff] text-xs mb-1">RATE/HR (₹)</label><Input type="number" value={formRate} onChange={e => setFormRate(parseInt(e.target.value) || 0)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="block text-[#00f3ff] text-xs mb-1">RATE/HR (₹)</label><Input type="number" value={formRate} onChange={e => setFormRate(parseInt(e.target.value) || 0)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
+            <div><label className="block text-[#00f3ff] text-xs mb-1">COINS/HR</label><Input type="number" value={formCoins} onChange={e => setFormCoins(parseInt(e.target.value) || 0)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
+          </div>
           <div className="flex gap-3 pt-2"><Button onClick={() => setAddModal(false)} variant="outline" className="flex-1 border-gray-700 text-gray-400">CANCEL</Button><Button onClick={handleAdd} className="flex-1 bg-[#00f3ff] text-black font-pixel text-xs border-none">CREATE</Button></div>
         </div>
       </Modal>
@@ -115,7 +119,10 @@ export function StationsClient({ initialStations }: { initialStations: any[] }) 
         <div className="space-y-4 font-mono">
           <div><label className="block text-[#ffea00] text-xs mb-1">NAME</label><Input value={formName} onChange={e => setFormName(e.target.value)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
           <div><label className="block text-[#ffea00] text-xs mb-1">TYPE</label><Input value={formType} onChange={e => setFormType(e.target.value)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
-          <div><label className="block text-[#ffea00] text-xs mb-1">RATE/HR (₹)</label><Input type="number" value={formRate} onChange={e => setFormRate(parseInt(e.target.value) || 0)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="block text-[#ffea00] text-xs mb-1">RATE/HR (₹)</label><Input type="number" value={formRate} onChange={e => setFormRate(parseInt(e.target.value) || 0)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
+            <div><label className="block text-[#ffea00] text-xs mb-1">COINS/HR</label><Input type="number" value={formCoins} onChange={e => setFormCoins(parseInt(e.target.value) || 0)} className="bg-[#0f1026] border-gray-700 text-white" /></div>
+          </div>
           <div className="flex gap-3 pt-2"><Button onClick={() => setEditModal({ open: false, station: null })} variant="outline" className="flex-1 border-gray-700 text-gray-400">CANCEL</Button><Button onClick={handleEdit} className="flex-1 bg-[#ffea00] text-black font-pixel text-xs border-none">SAVE</Button></div>
         </div>
       </Modal>

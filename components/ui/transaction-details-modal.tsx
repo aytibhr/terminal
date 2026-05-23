@@ -61,6 +61,7 @@ export function TransactionDetailsModal({ open, onClose, txnId }: TransactionDet
   const addonsList = data?.addons || [];
 
   const isMember = txn?.amountCreditsUsed > 0 || (sess && sess.totalPrice === 0);
+  const isGeneric = txn?.transactionType === 'Income' || txn?.transactionType === 'Expense';
 
   // Play cost: Walk-ins pay hourly rate. Members pay 0 cash (deducted in coins)
   const ratePerHour = station?.ratePerHour || 0;
@@ -72,7 +73,7 @@ export function TransactionDetailsModal({ open, onClose, txnId }: TransactionDet
   const addonsTotal = addonsList.reduce((sum: number, item: any) => sum + (item.priceAtPurchase * item.quantity), 0);
   
   // Total calculated cash (excluding member coins)
-  const systemCalculatedTotal = calculatedPlayPrice + addonsTotal;
+  const systemCalculatedTotal = isGeneric ? (txn?.amountCash || 0) : (calculatedPlayPrice + addonsTotal);
   const receivedAmount = txn?.amountCash || 0;
   const difference = systemCalculatedTotal - receivedAmount;
 
@@ -94,18 +95,31 @@ export function TransactionDetailsModal({ open, onClose, txnId }: TransactionDet
           {/* User & Transaction Basic Header */}
           <div className="p-3 bg-[#0f1026] border border-gray-800 rounded-lg flex justify-between items-center">
             <div>
-              <p className="text-[10px] text-gray-500">GAMER / CUSTOMER</p>
+              <p className="text-[10px] text-gray-500">{isGeneric ? 'TRANSACTION DETAILS' : 'GAMER / CUSTOMER'}</p>
               <p className="text-white font-bold text-base mt-0.5">
-                {txn.customerName || 'Gamer'}
+                {isGeneric ? (txn.comment || (txn.transactionType === 'Expense' ? 'Business Expense' : 'Other Income')) : (txn.customerName || 'Gamer')}
               </p>
-              {txn.userPhone && <p className="text-[#00f3ff] text-xs mt-0.5">{txn.userPhone}</p>}
+              {!isGeneric && txn.userPhone && <p className="text-[#00f3ff] text-xs mt-0.5">{txn.userPhone}</p>}
+              {isGeneric && txn.customerName && <p className="text-[#00f3ff] text-xs mt-0.5">By: {txn.customerName}</p>}
             </div>
             <span className={`text-[10px] px-2.5 py-0.5 rounded font-pixel uppercase ${
-              isMember ? 'text-[#ffea00] bg-[#ffea00]/20' : 'text-[#00ff55] bg-[#00ff55]/20'
+              isMember ? 'text-[#ffea00] bg-[#ffea00]/20' : 
+              txn.transactionType === 'Expense' ? 'text-[#ff00ea] bg-[#ff00ea]/20 animate-pulse' :
+              txn.transactionType === 'Income' ? 'text-[#00ff55] bg-[#00ff55]/20' :
+              txn.transactionType === 'Snack' ? 'text-[#00ff55] bg-[#00ff55]/20' :
+              'text-[#00ff55] bg-[#00ff55]/20'
             }`}>
-              {isMember ? 'VIP Member' : 'Walk-In'}
+              {isMember ? 'VIP Member' : txn.transactionType}
             </span>
           </div>
+
+          {/* Standalone snack sale comment display */}
+          {txn.transactionType === 'Snack' && !sess && txn.comment && (
+            <div className="p-3 bg-[#0f1026]/40 border border-gray-850 rounded-lg">
+              <p className="text-[10px] text-gray-500 uppercase">TRANSACTION COMMENT</p>
+              <p className="text-white font-bold mt-1">{txn.comment}</p>
+            </div>
+          )}
 
           {/* Station Details */}
           {station && (
@@ -119,7 +133,7 @@ export function TransactionDetailsModal({ open, onClose, txnId }: TransactionDet
               </div>
               {!isMember && (
                 <p className="text-[11px] text-gray-400">
-                  Rate: <strong className="text-white">₹{ratePerHour}/hour</strong>
+                  Rate: <strong className="text-white">₹{ratePerHour}/hour</strong> · <span className="text-[#ffea00]">{station.coinsPerHour || 4} coins/hr</span>
                 </p>
               )}
             </div>
@@ -149,44 +163,46 @@ export function TransactionDetailsModal({ open, onClose, txnId }: TransactionDet
           )}
 
           {/* Addons breakdown list */}
-          <div className="p-3 bg-[#0f1026]/40 border border-gray-800 rounded-lg space-y-2.5">
-            <p className="text-[10px] text-[#00f3ff] uppercase font-bold tracking-wider flex items-center gap-1">
-              <CupSoda className="w-3.5 h-3.5" /> ADDONS breakdown
-            </p>
-            {addonsList.length === 0 ? (
-              <p className="text-xs text-gray-600 italic py-1">No custom snacks, drinks, or items added.</p>
-            ) : (
-              <div className="space-y-1.5 divide-y divide-gray-800/50">
-                {addonsList.map((item: any) => (
-                  <div key={item.id} className="pt-1.5 flex justify-between text-xs font-mono">
-                    <span className="text-gray-300">
-                      {item.name} <span className="text-gray-600">x{item.quantity}</span>
-                    </span>
-                    <span className="text-white">
-                      ₹{item.priceAtPurchase} × {item.quantity} = <strong className="text-[#00ff55]">₹{item.priceAtPurchase * item.quantity}</strong>
-                    </span>
+          {(addonsList.length > 0 || txn.transactionType === 'Snack') && (
+            <div className="p-3 bg-[#0f1026]/40 border border-gray-800 rounded-lg space-y-2.5">
+              <p className="text-[10px] text-[#00f3ff] uppercase font-bold tracking-wider flex items-center gap-1">
+                <CupSoda className="w-3.5 h-3.5" /> ADDONS breakdown
+              </p>
+              {addonsList.length === 0 ? (
+                <p className="text-xs text-gray-600 italic py-1">No custom snacks, drinks, or items added.</p>
+              ) : (
+                <div className="space-y-1.5 divide-y divide-gray-800/50">
+                  {addonsList.map((item: any) => (
+                    <div key={item.id} className="pt-1.5 flex justify-between text-xs font-mono">
+                      <span className="text-gray-300">
+                        {item.name} <span className="text-gray-600">x{item.quantity}</span>
+                      </span>
+                      <span className="text-white">
+                        ₹{item.priceAtPurchase} × {item.quantity} = <strong className="text-[#00ff55]">₹{item.priceAtPurchase * item.quantity}</strong>
+                      </span>
+                    </div>
+                  ))}
+                  <div className="pt-2 flex justify-between text-xs font-bold">
+                    <span className="text-gray-400">ADDONS TOTAL</span>
+                    <span className="text-[#00ff55]">₹{addonsTotal}</span>
                   </div>
-                ))}
-                <div className="pt-2 flex justify-between text-xs font-bold">
-                  <span className="text-gray-400">ADDONS TOTAL</span>
-                  <span className="text-[#00ff55]">₹{addonsTotal}</span>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Financial calculations */}
           <div className="p-4 bg-[#0a0a1a] border border-[#ff00ea]/30 rounded-lg space-y-3">
             <p className="text-xs text-[#ff00ea] font-bold uppercase tracking-wider">PAYMENT DETAILS & SETTLEMENT</p>
             
             {/* Membership Settlement info */}
-            {isMember && (
+            {isMember && sess && (
               <div className="bg-[#ffea00]/5 border border-[#ffea00]/20 rounded p-2.5 text-xs text-[#ffea00] space-y-1">
                 <p className="font-bold flex items-center gap-1.5">
                   <Coins className="w-4 h-4 shrink-0" /> VIP COINS SETTLEMENT
                 </p>
                 <p className="text-gray-400 font-mono text-[11px]">
-                  Play Session Allotment: <strong className="text-white">{Math.ceil(playDurationMins / 15)} coins</strong> deducted from membership.
+                  Play Session Allotment: <strong className="text-white">{txn.amountCreditsUsed || Math.ceil((playDurationMins / 60) * (station?.coinsPerHour || 4))} coins</strong> deducted from membership.
                 </p>
                 <p className="text-gray-400 font-mono text-[11px]">
                   Addons/Extras: Charged separately in cash as money.
@@ -195,31 +211,35 @@ export function TransactionDetailsModal({ open, onClose, txnId }: TransactionDet
             )}
 
             <div className="space-y-1.5 text-xs border-t border-gray-800 pt-3">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Play Allotment Cash:</span>
-                <span className="text-white">₹{calculatedPlayPrice}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Addons Cash Total:</span>
-                <span className="text-white">₹{addonsTotal}</span>
-              </div>
+              {!isGeneric && (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Play Allotment Cash:</span>
+                    <span className="text-white">₹{calculatedPlayPrice}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Addons Cash Total:</span>
+                    <span className="text-white">₹{addonsTotal}</span>
+                  </div>
+                </>
+              )}
               
               <div className="flex justify-between border-t border-gray-800/80 pt-2 text-sm">
                 <span className="text-gray-400 flex items-center gap-1 font-bold">
-                  <Info className="w-3.5 h-3.5 text-gray-500" /> SYSTEM CALCULATED:
+                  <Info className="w-3.5 h-3.5 text-gray-500" /> {txn.transactionType === 'Expense' ? 'TOTAL EXPENSE:' : 'SYSTEM CALCULATED:'}
                 </span>
                 <span className="text-white font-bold">₹{systemCalculatedTotal}</span>
               </div>
 
               <div className="flex justify-between text-base border-t border-[#00ff55]/30 pt-2 font-pixel">
                 <span className="text-[#00ff55] flex items-center gap-1">
-                  <IndianRupee className="w-4 h-4" /> CASH RECEIVED:
+                  <IndianRupee className="w-4 h-4" /> {txn.transactionType === 'Expense' ? 'CASH PAID OUT:' : 'CASH RECEIVED:'}
                 </span>
                 <span className="text-[#00ff55] font-bold">₹{receivedAmount}</span>
               </div>
 
               {/* Display discounts or overrides */}
-              {difference !== 0 && (
+              {!isGeneric && difference !== 0 && (
                 <div className="mt-2.5 p-2 bg-[#ff00ea]/5 border border-[#ff00ea]/30 rounded-md flex items-center justify-between text-xs">
                   <span className="text-[#ff00ea] font-bold flex items-center gap-1">
                     <BadgePercent className="w-4 h-4" /> {difference > 0 ? 'REDUCTION / DISCOUNT:' : 'ADDITIONAL CHARGE:'}

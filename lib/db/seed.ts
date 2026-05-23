@@ -36,12 +36,12 @@ async function seed() {
 
   console.log('Creating default stations...');
   await db.insert(stations).values([
-    { name: 'PS5 Individual - Station 1', type: 'PS5', ratePerHour: 150 },
-    { name: 'PS5 Individual - Station 2', type: 'PS5', ratePerHour: 150 },
-    { name: 'PS5 Individual - Station 3', type: 'PS5', ratePerHour: 150 },
-    { name: 'PS5 Group Lounge', type: 'Lounge', ratePerHour: 300 },
-    { name: 'Car Simulator', type: 'Sim', ratePerHour: 250 },
-    { name: 'Billiards Private Room', type: 'Billiards', ratePerHour: 300 },
+    { name: 'PS5 Individual - Station 1', type: 'PS5', ratePerHour: 150, coinsPerHour: 4 },
+    { name: 'PS5 Individual - Station 2', type: 'PS5', ratePerHour: 150, coinsPerHour: 4 },
+    { name: 'PS5 Individual - Station 3', type: 'PS5', ratePerHour: 150, coinsPerHour: 4 },
+    { name: 'PS5 Group Lounge', type: 'Lounge', ratePerHour: 300, coinsPerHour: 8 },
+    { name: 'Car Simulator', type: 'Sim', ratePerHour: 250, coinsPerHour: 6 },
+    { name: 'Billiards Private Room', type: 'Billiards', ratePerHour: 300, coinsPerHour: 8 },
   ]);
   console.log('Default stations created.');
 

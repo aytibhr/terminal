@@ -30,6 +30,7 @@ export const stations = pgTable('stations', {
   type: varchar('type', { length: 50 }).notNull(),
   status: varchar('status', { length: 20 }).notNull().default('Active'),
   ratePerHour: integer('rate_per_hour').notNull(),
+  coinsPerHour: integer('coins_per_hour').notNull().default(4),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 });
@@ -53,9 +54,10 @@ export const transactions = pgTable('transactions', {
   userPhone: varchar('user_phone', { length: 20 }),
   amountCash: integer('amount_cash').notNull().default(0),
   amountCreditsUsed: integer('amount_credits_used').notNull().default(0),
-  transactionType: varchar('transaction_type', { length: 50 }).notNull(), // 'Session', 'Top-up', 'Snack'
+  transactionType: varchar('transaction_type', { length: 50 }).notNull(), // 'Session', 'Membership', 'Snack', 'Income', 'Expense'
   timestamp: timestamp('timestamp').notNull().defaultNow(),
   customerName: varchar('customer_name', { length: 100 }),
+  comment: text('comment'),
 });
 
 export const membershipPlans = pgTable('membership_plans', {
@@ -237,7 +239,8 @@ export const addons = pgTable('addons', {
 
 export const sessionAddons = pgTable('session_addons', {
   id: serial('id').primaryKey(),
-  sessionId: integer('session_id').notNull().references(() => sessions.id),
+  sessionId: integer('session_id').references(() => sessions.id),
+  transactionId: integer('transaction_id').references(() => transactions.id),
   addonId: integer('addon_id').notNull().references(() => addons.id),
   quantity: integer('quantity').notNull().default(1),
   priceAtPurchase: integer('price_at_purchase').notNull(),

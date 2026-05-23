@@ -10,6 +10,7 @@ Terminal 8 is a state-of-the-art, high-performance, dark cyber-neon themed SaaS 
 * **Live Station Tiles**: Displays live countdown timers, station status (Active, Occupied, Maintenance), and active session time bounds (with smooth 15-minute low-time glowing alerts).
 * **Calibration Setup Time Allotment**: Supports setting a custom, non-billed setup duration (e.g. 4 minutes) during walk-in or membership allotments, separate from charged playtime.
 * **Console Support**: Standardized station categories including **PS5 Single**, **PS5 Multiplayer**, **Car Simulators** (priced at ₹250/hr), and **Billiards**.
+* **Custom Station Coins Rates**: Displays active `coins/hr` rates on all console pages, and lets admins configure custom coin rates per hour (e.g. lounges vs controller setups) in the stations dashboard.
 * **Quick Extend (+15 Mins)**: One-click visual confirm modal to instantly extend any occupied station session.
 
 ### 2. Consolidated Snack & Addon Inventory (`/addons`)
@@ -20,14 +21,17 @@ Terminal 8 is a state-of-the-art, high-performance, dark cyber-neon themed SaaS 
 ### 3. Smart Checkout & Flexible Billing
 * **Idempotency Checkout Guard**: Implemented database-level validation to prevent rapid double-clicks from generating duplicate checkout transactions.
 * **Flexible Cash Override**: Allows operators to manually modify the final total cash collected at checkout, introducing custom reductions or goodwill discounts.
-* **VIP Member Splits**: Automatically separates VIP station play deductions (charged in **T8 Coins** based on 15-minute intervals) from snack/drink addon balances (settled strictly in cash).
+* **VIP Member Dynamic Splits**: Automatically separates VIP station play deductions (charged dynamically in **T8 Coins** based on station coin rates) from snack/drink addon balances (settled strictly in cash).
 
 ### 4. Interactive Leaderboard Panel (`/leaderboard`)
 * **Cyberpunk Standings**: Highly detailed competitive gamer standings showcasing rank, gamer tag, game title, console platform, rank tiers, and visual XP score boards.
 
 ### 5. Detailed Transaction Ledgers & Reports (`/reports`)
+* **Interactive Addition Modal**: Introduced a glowing cyber-neon **Add** button to log standalone snack/addon transactions, generic business incomes, or office expenses directly to the financial sheets.
+* **Product Drawer Cart Checkout**: Embeds a search filter and increment/decrement shopping cart drawer forStandalone product sales, updating ledger records dynamically.
 * **Dynamic Report Popups**: Embedded a premium view (`Eye` icon button) trigger next to all entries in the Financial Ledger.
 * **Interactive Breakdown sheet**: Displays precise calibration setup duration vs charged playtime, complete itemized order summaries for addons, auto-calculated expected billing vs final cash received, and a distinct glowing reduction/discount override indicator.
+* **Dynamic Revenue Dashboard**: Automatically tracks **TOTAL INCOME**, **TOTAL EXPENSES**, and **NET PROFIT** (color-highlighted green/pink depending on margin status) updated in real-time by active date range pickers.
 
 ### 6. Identified Gamers Analytics Directory (`/gamers`)
 * **Data Integrity & Analytics Accuracy**: Employs strict, multi-layer validation (ignoring anonymous placeholders like 'Walk-In', 'GUEST', 'N/A', or phone numbers without digits) to prevent guest traffic or unauthenticated checkout sessions from corrupting authentic player stats.
